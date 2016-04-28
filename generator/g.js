@@ -1,11 +1,11 @@
 'use strict';
 
 var sha1 = require('sha1');
-
+var Promise = require('bluebird');
+var request = Promise.promisify(require('request'));
 var prefix = 'https://api.weixin.qq.com/cgi-bin/token?';
-
 var api = {
-    accessToken: prefix + 'grant_type = client_credential'
+    accessToken: prefix + 'grant_type=client_credential'
 };
 
 
@@ -83,10 +83,11 @@ Wechat.prototype.updateAccessToken = function () {
     
     return new Promise(function (resolve, reject) {
         request({url: url, json: true})
-        
         .then(function (response) {
 //    在得到请求地址之后. 通过request 进行请求,更新
-            var data = response[1];                 //获得信息
+            console.log(typeof response);
+            var data = response.body;                 //获得信息
+            console.log(data);
             var now = new Date().getTime();         //获得当前日期
             data.expires_in = now + (data.expires_in - 20) * 1000;
             resolve(data);
@@ -97,6 +98,8 @@ Wechat.prototype.updateAccessToken = function () {
 
 
 module.exports = function (opt) {
+    var wechat = new Wechat(opt);
+    
     return function *(next) {
         console.log(this.query);
         // get somthing

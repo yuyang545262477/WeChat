@@ -10,12 +10,11 @@ var Promise = require('bluebird');
 exports.readFileSync = function (fpath, encoding) {
     return new Promise(function (resolve, reject) {
         fs.readFile(fpath, encoding, function (err, content) {
-            if (!err) {
-                resolve(err);
+            if (err) {
+                reject(err);
             } else {
-                reject(content);
+                resolve(content);
             }
-            
         })
     })
 };

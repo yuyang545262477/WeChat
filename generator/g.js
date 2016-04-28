@@ -23,8 +23,8 @@ function Wechat(opt) {
     
     
     this.getAccessToken()
-    .then(function (data) {
         //    第一步:由于从静态资源取出为字符串,所以转化成JOSN格式 .
+    .then(function (data) {
         try {
             data = JSON.parse(data);
         }
@@ -41,8 +41,8 @@ function Wechat(opt) {
             return that.updateAccessToken();
         }
     })
-    .then(function (data) {
         //    获得合法token 将其挂在实例上
+    .then(function (data) {
         that.access_token = data.access_token;
         that.expires_in = data.expires_in;  //过期的东西
         
@@ -100,22 +100,23 @@ Wechat.prototype.updateAccessToken = function () {
 module.exports = function (opt) {
     var wechat = new Wechat(opt);
     
+    //服务器设置验证部分
     return function *(next) {
         console.log(this.query);
         // get somthing
-        var token = opt.token,
-            signature = this.query.signature,
-            nonce = this.query.nonce,
-            timestamp = this.query.timestamp,
-            echostr = this.query.echostr;
+        var token = opt.token;
+        var signature = this.query.signature;
+        var nonce = this.query.nonce;
+        var timestamp = this.query.timestamp;
+        var echostr = this.query.echostr;
         //  deal with sthing.
         var str = [token, timestamp, nonce].sort().join(''),
             sha = sha1(str);
         
         if (sha == signature) {
-            this.body = echostr + '';
+            this.body = echostr;
         } else {
-            this.body = 'wrong';
+            console.log('wrong');
         }
         
     }

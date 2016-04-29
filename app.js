@@ -17,7 +17,7 @@ config = {
         saveAccessToken: function (data) {
             //noinspection JSDuplicatedDeclaration
             var data = JSON.stringify(data);
-            return util.writeFileSync(wechat_file,data);
+            return util.writeFileSync(wechat_file, data);
         }
         
     }
@@ -25,7 +25,7 @@ config = {
 //initial Koa
 
 var app = new Koa();
-
+ 
 app.use(wechat(config.wechat));
 
 app.listen(8080);

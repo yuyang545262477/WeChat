@@ -28,8 +28,8 @@ var app = new Koa();
  
 app.use(wechat(config.wechat));
 
-app.listen(8080);
-console.log('its running : 8080');
+app.listen(4925);
+console.log('its running : 4925');
 
 
 

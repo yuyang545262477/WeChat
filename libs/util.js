@@ -36,7 +36,6 @@ exports.writeFileSync = function (fpath, content) {
                 log('任务成功>>>>>>>>>>');
                 resolve(content);
                 log('>===结束保存文件====<');
-                
             }
             
         })

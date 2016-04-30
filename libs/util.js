@@ -6,7 +6,6 @@ var Promise = require('bluebird');
 var log = require('../generator/log');
 
 
-//导出函数
 //1.readFileSync
 exports.readFileSync = function (fpath, encoding) {
     return new Promise(function (resolve, reject) {

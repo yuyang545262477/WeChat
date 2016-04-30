@@ -25,7 +25,7 @@ config = {
 //initial Koa
 
 var app = new Koa();
- 
+
 app.use(wechat(config.wechat));
 
 app.listen(4925);

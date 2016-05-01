@@ -2,6 +2,7 @@
 var Promise = require('bluebird');
 var log = require('./log');
 var request = Promise.promisify(require('request'));
+var util = require('./xml2js');
 var prefix = 'https://api.weixin.qq.com/cgi-bin/token?';
 var api = {
     accessToken: prefix + 'grant_type=client_credential'
@@ -71,8 +72,8 @@ Wechat.prototype.isValidAccessToken = function (data) {
 //    第二部,检测是否过期
     log('...........' + '完整度:100%');
     log('检测文件有效性.................');
-    var expires_in = data.expires_in;   //获得票据的过期日期.
     var now = new Date().getTime();
+    var expires_in = data.expires_in;   //获得票据的过期日期.
     
     var heihei = now < expires_in;
     log('.............' + '结果:' + heihei);
@@ -110,5 +111,20 @@ Wechat.prototype.updateAccessToken = function () {
     
 };
 
+/*
+ * x
+ * */
+Wechat.prototype.reply = function () {
+    var content = this.body;//拿到回复的内容
+    var message = this.weixin;//拿到消息.
 
+//    将回复的内容,和拿到的消息,传递给工具函数
+    var xml = util.tpl(content, message);
+    
+    this.status = 200;
+    this.type = 'application/xml';
+    this.body = xml;
+    
+};
 module.exports = Wechat;
+    

@@ -1,8 +1,9 @@
 'use strict';
 
 var xml2js = require('xml2js');
+var tpl = require('./temple');
 var Promise = require('bluebird');
-var log = require('./log');
+// var log = require('./log');
 
 
 exports.parseXMLAsync = function (xml) {
@@ -74,3 +75,24 @@ function formatMessage(xml) {
     
 }
 exports.formatMessage = formatMessage;
+
+//回复部分
+exports.tpl = function (content, message) {
+    var info = {};
+//    默认
+    var type = 'text';
+    var FromUserName = message.FromUserName;
+    var ToUserName = message.ToUserName;
+    
+    if (Array.isArray(content)) {
+        type = 'news';
+    }
+    type = content.type || type;
+    info.content = content;
+    info.CreateTime = new Date().getTime();
+    info.MsgType = type;
+    info.ToUserName = FromUserName;
+    info.FromUserName = ToUserName;
+    
+    return tpl.compiled(info);  
+};

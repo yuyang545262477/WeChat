@@ -6,7 +6,7 @@ var Wechat = require('./token');
 var log = require('./log');
 var xml2js = require('./xml2js');
 
-module.exports = function (opt) {
+module.exports = function (opt,handler) {
     
     var wechat = new Wechat(opt);
     // setInterval(Wechat(opt),1000);
@@ -25,6 +25,8 @@ module.exports = function (opt) {
         //  deal with sthing.
         var str = [token, timestamp, nonce].sort().join(''),
             sha = sha1(str);
+        
+        
         //判断请求
         if (this.method === 'GET') {
             if (sha == signature) {
@@ -48,31 +50,17 @@ module.exports = function (opt) {
             // log(content);
             var message = xml2js.formatMessage(content);
             log(message);
-            //    开启回复模式..
-            if (message.MsgType == 'text') {
-                // if (message.Event == 'subscribe') {
-                //    生成当前时间
-                var now = new Date().getTime();
-                //    返回状态吗
-                that.status = 200;
-                //    返回类型
-                that.type = 'application/xml';
-                //    返回主题
-                that.body =
-                    "<xml>" +
-                    "<ToUserName><![CDATA[" + message.FromUserName + "]]></ToUserName>" +
-                    "<FromUserName><![CDATA[" + message.ToUserName + "]]></FromUserName>" +
-                    "<CreateTime>"+ now + " </CreateTime>" +
-                    "<MsgType><![CDATA[text]]></MsgType>" +
-                    "<Content><![CDATA[哈哈哈哈]]></Content>" +
-                    "</xml> ";
-                log(that.body);
-                return;
-                // }
-            }
             
+            this.weixin = message;
+            yield handler.call(this, next);
             
+            wechat.reply.call(this); //通过call 改变上下文.
+            
+        //    请求和响应的流程,会回到此处.
         }
         
+        
     }
+    
+    
 };

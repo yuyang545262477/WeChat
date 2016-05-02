@@ -85,12 +85,13 @@ exports.tpl = function (content, message) {
     var ToUserName = message.ToUserName;
     
     if (Array.isArray(content)) {
-        type = 'news';
+            type = 'news';
     }
     type = content.type || type;
     info.content = content;
     info.CreateTime = new Date().getTime();
-    info.MsgType = type;
+    info.MsgType = type; //此处设置,回复的类型.
+    
     info.ToUserName = FromUserName;
     info.FromUserName = ToUserName;
     

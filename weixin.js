@@ -1,4 +1,11 @@
 'use strict';
+var path = require('path');
+var config = require('./config');
+var Wechat = require('./generator/token');
+var log = require('./generator/log');
+
+
+var wechatApi = new Wechat(config.wechat);
 
 exports.reply = function *(next) {
     var message = this.weixin;
@@ -45,7 +52,19 @@ exports.reply = function *(next) {
     switch (message.MsgType) {
         //文字
         case 'text':
-            this.body = "哈哈哈,不想和你聊天";
+            // this.body = "哈哈哈,不想和你聊天";
+            if (message.Content === '1') {
+                log('收到微信服务器传递过来的信息....');
+                var _data = yield  wechatApi.uploadMaterial('image', __dirname + '/2' +
+                    '.jpg');
+                this.body = {
+                    type: 'image',
+                    MediaId:_data.media_id
+                };
+                
+            } else {
+                this.body = '哈哈哈哈';
+            }
             break;
         //图片
         case 'image':

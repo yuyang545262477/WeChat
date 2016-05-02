@@ -1,11 +1,14 @@
 'use strict';
+var fs = require('fs');
 var Promise = require('bluebird');
 var log = require('./log');
 var request = Promise.promisify(require('request'));
 var util = require('./xml2js');
-var prefix = 'https://api.weixin.qq.com/cgi-bin/token?';
+var prefix = 'https://api.weixin.qq.com/cgi-bin/';
 var api = {
-    accessToken: prefix + 'grant_type=client_credential'
+    accessToken: prefix + 'token?grant_type=client_credential',
+    upload: prefix + 'media/upload?'//上海临时材料.
+    
 };
 
 
@@ -20,7 +23,16 @@ function Wechat(opt) {
     
     this.getAccessToken = opt.getAccessToken;
     this.saveAccessToken = opt.saveAccessToken;
+    this.fetchAccessToken();
     
+}
+Wechat.prototype.fetchAccessToken = function (data) {
+    var that = this;
+
+    //检测,是否存在合法的access_token
+    if (this.access_token && this.expires_in && this.isValidAccessToken(this)) {
+        return Promise.resolve(this);
+    }
     
     this.getAccessToken()
     //    第一步:由于从静态资源取出为字符串,所以转化成JOSN格式 .
@@ -50,42 +62,41 @@ function Wechat(opt) {
     })
     //    获得合法token 将其挂在实例上
     .then(function (data) {
-        log('<==开始保存文件===>');
         that.access_token = data.access_token;
         that.expires_in = data.expires_in;  //过期的东西
         
         //保存起来
         that.saveAccessToken(data);
+        return Promise.resolve(data);
     })
-}
+    
+};
+
 /*
  * 实现合法性检查,
  * 将其增加在原型连上.
  * */
 
 Wechat.prototype.isValidAccessToken = function (data) {
-    log('............收到检测任务');
-    log('检测文件完整性...........');
+
     if (!data || !data.access_token || !data.expires_in) {
         return false
     }
 //    第二部,检测是否过期
-    log('...........' + '完整度:100%');
-    log('检测文件有效性.................');
+
     var now = new Date().getTime();
     var expires_in = data.expires_in;   //获得票据的过期日期.
     
-    var heihei = now < expires_in;
-    log('.............' + '结果:' + heihei);
+
     return now < expires_in;
     
     
 };
-
 /*
  * 更新票据
  * 同样挂在圆形链上.
  * */
+
 Wechat.prototype.updateAccessToken = function () {
 //    第一步,获取appID和appSecret
     var appID = this.appID;
@@ -112,7 +123,37 @@ Wechat.prototype.updateAccessToken = function () {
 };
 
 /*
- * x
+ * 上传临时文件.
+ * */
+Wechat.prototype.uploadMaterial = function (type, pathfile) {
+    log('进去upload方法.....');
+    var that = this;
+    var form = {
+        media: fs.createReadStream(pathfile)
+    };
+
+//    新建Promise
+    return new Promise(function (resolve, reject) {
+        that
+        .fetchAccessToken() //    获取全局的access_token
+        .then(function (data) {
+            //    存放,上传地址.
+            var url = api.upload + 'access_token=' + data.access_token + '&type=' + type;
+            //    拿到url 通过request进行上传
+            request({method: 'POST', url: url, formData: form, json: true})
+            .then(function (res) {
+                if (!res.body) throw  new Error('上传,返回的信息,失败');
+                resolve(res.body);
+            })
+        })
+        .catch(function (err) {
+            reject(err); //捕获整个流程的错误.
+        })
+    })
+};
+
+/*
+ * 回复模板.
  * */
 Wechat.prototype.reply = function () {
     var content = this.body;//拿到回复的内容
